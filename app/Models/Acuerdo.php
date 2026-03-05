@@ -1,0 +1,45 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class Acuerdo extends Model
+{
+    use HasFactory;
+    protected $fillable = [
+        'alumno_id', 'empresa_id', 'contacto_empresa_id', 'tutor_dual_id', 'responsable_id', 'localidad',
+        'nombre_acuerdo', 'estado_convenio', 'avisado', 'horario', 'horas_totales',
+        'grupo', 'curso', 'ano',
+    ];
+
+    protected $casts = [
+        'avisado' => 'boolean',
+    ];
+
+    public function alumno()
+    {
+        return $this->belongsTo(Alumno::class);
+    }
+
+    public function empresa()
+    {
+        return $this->belongsTo(Empresa::class);
+    }
+
+    public function contactoEmpresa()
+    {
+        return $this->belongsTo(ContactoEmpresa::class , 'contacto_empresa_id');
+    }
+
+    public function tutorDual()
+    {
+        return $this->belongsTo(TutorDual::class);
+    }
+
+    public function responsable()
+    {
+        return $this->belongsTo(Responsable::class , 'responsable_id');
+    }
+}

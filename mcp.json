@@ -1,0 +1,18 @@
+{
+    "name": "Laravel Boost MCP",
+    "version": "1.0.0",
+    "description": "Servidor MCP para Laravel",
+    "tools": [
+        {
+            "name": "ping",
+            "description": "Comprueba si el servidor MCP está activo"
+        },
+        {
+            "name": "listar_rutas",
+            "description": "Devuelve todas las rutas registradas en Laravel"
+        }
+    ],
+    "server": {
+        "url": "http://127.0.0.1:8085"
+    }
+}
