@@ -37,10 +37,12 @@ class EmpresaController extends Controller
             'direccion' => 'required|string|max:255',
             'poblacion' => 'required|string|max:150',
             'email' => 'required|email|max:150',
-            'campo_laboral' => 'required|string|max:150',
             'ciclos' => 'required|array',
             'observaciones' => 'nullable|string',
+            'telefono' => 'nullable|string|max:50',
+            'horario' => 'nullable|string|max:255',
         ]);
+
 
         Empresa::create($validated);
 
@@ -65,9 +67,10 @@ class EmpresaController extends Controller
             'direccion' => 'required|string|max:255',
             'poblacion' => 'required|string|max:150',
             'email' => 'required|email|max:150',
-            'campo_laboral' => 'required|string|max:150',
             'ciclos' => 'required|array',
             'observaciones' => 'nullable|string',
+            'telefono' => 'nullable|string|max:50',
+            'horario' => 'nullable|string|max:255',
         ]);
 
         $empresa->update($validated);

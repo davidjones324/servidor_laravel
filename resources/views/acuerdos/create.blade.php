@@ -11,6 +11,55 @@
                 <form action="{{ route('acuerdos.store') }}" method="POST">
                     @csrf
                     
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 bg-ies-blue-50 p-6 rounded-xl border border-ies-blue-100">
+                        <p class="md:col-span-4 text-xs text-ies-blue-600 font-semibold uppercase tracking-widest">🔍 Filtros para alumnos, tutores y empresas</p>
+                        <!-- Ciclo -->
+                        <div>
+                            <x-input-label for="ciclo" :value="__('Ciclo')" />
+                            <select id="ciclo" name="ciclo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" onchange="filterDependents()">
+                                <option value="">Cualquiera</option>
+                                <option value="ASIR" {{ old('ciclo') == 'ASIR' ? 'selected' : '' }}>ASIR</option>
+                                <option value="DAM" {{ old('ciclo') == 'DAM' ? 'selected' : '' }}>DAM</option>
+                                <option value="SMR" {{ old('ciclo') == 'SMR' ? 'selected' : '' }}>SMR</option>
+                            </select>
+                            @error('ciclo') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Curso -->
+                        <div>
+                            <x-input-label for="curso" :value="__('Curso')" />
+                            <select id="curso" name="curso" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" onchange="filterDependents()">
+                                <option value="">Cualquiera</option>
+                                <option value="1º" {{ old('curso') == '1º' ? 'selected' : '' }}>1º</option>
+                                <option value="2º" {{ old('curso') == '2º' ? 'selected' : '' }}>2º</option>
+                            </select>
+                            @error('curso') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Grupo -->
+                        <div>
+                            <x-input-label for="grupo" :value="__('Grupo')" />
+                            <x-text-input id="grupo" name="grupo" type="text" class="mt-1 block w-full" :value="old('grupo')" placeholder="Ej: A" oninput="filterDependents()" />
+                            @error('grupo') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- Año Académico -->
+                        <div>
+                            @php
+                                $month = date('n');
+                                $year = date('Y');
+                                if ($month < 9) {
+                                    $defaultAno = ($year - 1) . '/' . substr($year, -2);
+                                } else {
+                                    $defaultAno = $year . '/' . substr($year + 1, -2);
+                                }
+                            @endphp
+                            <x-input-label for="ano_academico" :value="__('Año Académico')" />
+                            <x-text-input id="ano_academico" name="ano_academico" type="text" class="mt-1 block w-full" :value="old('ano_academico', $defaultAno)" placeholder="Ej: 2024/2025" oninput="filterDependents()" />
+                            @error('ano_academico') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <!-- Alumno -->
                         <div class="relative">
@@ -21,15 +70,40 @@
                                 </button>
                             </label>
                             <input type="text" id="search_alumno" onkeyup="filterSelect('search_alumno', 'alumno_id')" placeholder="Buscar alumno..." class="hidden mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-1">
-                            <select name="alumno_id" id="alumno_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                            <select name="alumno_id" id="alumno_id" onchange="updateAlumnoNSS(this)" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">Selecciona un alumno</option>
                                 @foreach($alumnos as $alumno)
-                                    <option value="{{ $alumno->id }}" {{ old('alumno_id') == $alumno->id ? 'selected' : '' }}>
+                                    @php
+                                        $latestMatricula = $alumno->matriculas->sortByDesc('anio_academico')->first();
+                                    @endphp
+                                    <option value="{{ $alumno->id }}" 
+                                        data-nss="{{ $alumno->numero_ss }}"
+                                        data-ciclo="{{ $latestMatricula ? $latestMatricula->ciclo : '' }}"
+                                        data-curso-nivel="{{ $latestMatricula ? $latestMatricula->curso : '' }}"
+                                        data-grupo="{{ $latestMatricula ? $latestMatricula->grupo : '' }}"
+                                        data-anio-academico="{{ $latestMatricula ? $latestMatricula->anio_academico : '' }}"
+                                        {{ old('alumno_id') == $alumno->id ? 'selected' : '' }}>
                                         {{ $alumno->nombre }} {{ $alumno->apellidos }}
                                     </option>
                                 @endforeach
                             </select>
                             @error('alumno_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <!-- NSS del Alumno (Editable si falta) -->
+                        <div class="flex flex-col space-y-4">
+                            <div>
+                                <label for="numero_ss" class="block text-sm font-medium text-gray-700">Número Seguridad Social Alumno</label>
+                                <input type="text" name="numero_ss" id="numero_ss" value="{{ old('numero_ss') }}" 
+                                    class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+                                    placeholder="Selecciona un alumno para ver su NSS...">
+                                <p id="nss_warning" class="hidden text-[10px] text-red-500 font-bold uppercase mt-1">⚠️ El alumno no tiene NSS. Puedes añadirlo ahora.</p>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <input type="checkbox" name="tiene_seguro" id="tiene_seguro" value="1" {{ old('tiene_seguro') ? 'checked' : '' }}
+                                    class="rounded border-gray-300 text-indigo-600 shadow-sm focus:border-indigo-300 focus:ring focus:ring-indigo-200 focus:ring-opacity-50">
+                                <label for="tiene_seguro" class="text-sm font-medium text-gray-700">Tiene seguro escolar (snapshot para este acuerdo)</label>
+                            </div>
                         </div>
 
                         <!-- Empresa -->
@@ -44,7 +118,9 @@
                             <select name="empresa_id" id="empresa_id" onchange="updateContacts(this.value)" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">Selecciona una empresa</option>
                                 @foreach($empresas as $empresa)
-                                    <option value="{{ $empresa->id }}" {{ old('empresa_id') == $empresa->id ? 'selected' : '' }}>
+                                    <option value="{{ $empresa->id }}" 
+                                        data-ciclos="{{ implode(',', $empresa->ciclos ?? []) }}"
+                                        {{ old('empresa_id') == $empresa->id ? 'selected' : '' }}>
                                         {{ $empresa->razon_social }}
                                     </option>
                                 @endforeach
@@ -52,69 +128,28 @@
                             @error('empresa_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Persona de Contacto -->
-                        <div class="relative md:col-span-2 bg-gray-50 p-4 rounded-lg border border-gray-100">
-                            <div class="flex items-center justify-between mb-2">
-                                <label class="block text-sm font-bold text-gray-700 uppercase tracking-widest">Persona de Contacto (Empresa)</label>
-                                <div class="flex space-x-2">
-                                    <button type="button" onclick="toggleSearch('search_contacto')" class="text-xs bg-white border border-gray-300 px-2 py-1 rounded hover:bg-gray-50 flex items-center">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                        Buscar
-                                    </button>
-                                    <a id="link_nuevo_contacto" href="{{ route('contactos.create') }}" target="_blank" class="text-xs bg-ies-blue-600 text-white px-2 py-1 rounded hover:bg-ies-blue-700 flex items-center">
-                                        <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-                                        Añadir Nuevo
-                                    </a>
-                                </div>
-                            </div>
-                            
-                            <input type="text" id="search_contacto" onkeyup="filterSelect('search_contacto', 'contacto_empresa_id')" placeholder="Buscar contacto por nombre..." class="hidden mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-2">
-                            
-                                <div class="flex items-center space-x-4 mb-4 bg-white p-2 rounded border border-gray-100">
-                                    <label class="inline-flex items-center">
-                                        <input type="radio" name="contact_mode" value="existing" checked onclick="toggleContactMode('existing')" class="text-ies-blue-600 focus:ring-ies-blue-500">
-                                        <span class="ml-2 text-xs font-bold text-gray-600 uppercase">Contacto Existente</span>
-                                    </label>
-                                    <label class="inline-flex items-center">
-                                        <input type="radio" name="contact_mode" value="new" onclick="toggleContactMode('new')" class="text-ies-blue-600 focus:ring-ies-blue-500">
-                                        <span class="ml-2 text-xs font-bold text-gray-600 uppercase">Ver detalles / Nuevo</span>
-                                    </label>
-                                </div>
-
-                                <div id="existing_contact_section">
-                                    <select name="contacto_empresa_id" id="contacto_empresa_id" onchange="autoFillContact(this)" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                        <option value="">Selecciona un contacto</option>
-                                        @foreach($empresas as $empresa)
-                                            @foreach($empresa->contactos as $contacto)
-                                                <option value="{{ $contacto->id }}" 
-                                                    data-empresa="{{ $empresa->id }}" 
-                                                    data-telefono="{{ $contacto->telefono }}"
-                                                    data-dni="{{ $contacto->dni }}"
-                                                    data-puesto="{{ $contacto->puesto }}"
-                                                    {{ old('contacto_empresa_id') == $contacto->id ? 'selected' : '' }} 
-                                                    class="hidden">
-                                                    {{ $contacto->nombre }} {{ $contacto->apellidos }}
-                                                </option>
-                                            @endforeach
-                                        @endforeach
-                                    </select>
-                                </div>
-                                </div>
-                                <div id="contact_details_section" class="hidden md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500">Teléfono</label>
-                                        <input type="text" id="contacto_telefono" placeholder="Selecciona un contacto..." readonly class="mt-1 block w-full bg-gray-50 border-gray-200 rounded-md shadow-sm text-sm text-gray-600">
-                                    </div>
-                                    <div>
-                                        <label class="block text-xs font-medium text-gray-500">DNI/CIF Persona</label>
-                                        <input type="text" id="contacto_dni" placeholder="Selecciona un contacto..." readonly class="mt-1 block w-full bg-gray-50 border-gray-200 rounded-md shadow-sm text-sm text-gray-600">
-                                    </div>
-                                    <div class="md:col-span-2">
-                                        <label class="block text-xs font-medium text-gray-500">Puesto en la Empresa</label>
-                                        <input type="text" id="contacto_puesto" placeholder="Selecciona un contacto..." readonly class="mt-1 block w-full bg-gray-50 border-gray-200 rounded-md shadow-sm text-sm text-gray-600">
-                                    </div>
-                                </div>
-                            </div>
+                        <!-- Tutor Laboral -->
+                        <div class="relative md:col-span-2">
+                            <label for="contacto_empresa_id" class="block text-sm font-medium text-gray-700 flex justify-between">
+                                <span>Tutor Laboral</span>
+                                <button type="button" onclick="toggleSearch('search_contacto')" class="text-gray-400 hover:text-indigo-600">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </button>
+                            </label>
+                            <input type="text" id="search_contacto" onkeyup="filterSelect('search_contacto', 'contacto_empresa_id')" placeholder="Buscar tutor laboral..." class="hidden mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-1">
+                            <select name="contacto_empresa_id" id="contacto_empresa_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
+                                <option value="">Selecciona un tutor laboral</option>
+                                @foreach($empresas as $empresa)
+                                    @foreach($empresa->contactos as $contacto)
+                                        <option value="{{ $contacto->id }}" 
+                                            data-empresa="{{ $empresa->id }}" 
+                                            {{ old('contacto_empresa_id') == $contacto->id ? 'selected' : '' }} 
+                                            class="hidden">
+                                            {{ $contacto->nombre }} {{ $contacto->apellidos }} - {{ $contacto->telefono }}
+                                        </option>
+                                    @endforeach
+                                @endforeach
+                            </select>
                             @error('contacto_empresa_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
@@ -130,7 +165,11 @@
                             <select name="tutor_dual_id" id="tutor_dual_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
                                 <option value="">Selecciona un tutor</option>
                                 @foreach($tutores as $tutor)
-                                    <option value="{{ $tutor->id }}" {{ old('tutor_dual_id') == $tutor->id ? 'selected' : '' }}>
+                                    <option value="{{ $tutor->id }}" 
+                                        data-ciclos="{{ json_encode($tutor->ciclos) }}"
+                                        data-cursos="{{ json_encode($tutor->cursos) }}"
+                                        data-grupos="{{ json_encode($tutor->grupos) }}"
+                                        {{ old('tutor_dual_id') == $tutor->id ? 'selected' : '' }}>
                                         {{ $tutor->nombre }} {{ $tutor->apellidos }}
                                     </option>
                                 @endforeach
@@ -138,25 +177,7 @@
                             @error('tutor_dual_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Responsable -->
-                        <div class="relative md:col-span-1">
-                            <label for="responsable_id" class="block text-sm font-medium text-gray-700 flex justify-between">
-                                <span>Responsable</span>
-                                <button type="button" onclick="toggleSearch('search_responsable')" class="text-gray-400 hover:text-indigo-600">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-                                </button>
-                            </label>
-                            <input type="text" id="search_responsable" onkeyup="filterSelect('search_responsable', 'responsable_id')" placeholder="Buscar responsable..." class="hidden mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm mb-1">
-                            <select name="responsable_id" id="responsable_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
-                                <option value="">Selecciona un responsable</option>
-                                @foreach($responsables as $responsable)
-                                    <option value="{{ $responsable->id }}" {{ old('responsable_id') == $responsable->id ? 'selected' : '' }}>
-                                        {{ $responsable->nombre }} {{ $responsable->apellidos }} @if($responsable->cargo) ({{ $responsable->cargo }}) @endif
-                                    </option>
-                                @endforeach
-                            </select>
-                            @error('responsable_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
+
 
                         <!-- Localidad -->
                         <div>
@@ -172,15 +193,17 @@
                             @error('nombre_acuerdo') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Estado Convenio -->
+                        <!-- Estado -->
                         <div>
-                            <label for="estado_convenio" class="block text-sm font-medium text-gray-700">Estado</label>
-                            <select name="estado_convenio" id="estado_convenio" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                <option value="pendiente" {{ old('estado_convenio') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                <option value="hecho_pendiente_firma" {{ old('estado_convenio') == 'hecho_pendiente_firma' ? 'selected' : '' }}>Realizado</option>
-                                <option value="firmado" {{ old('estado_convenio') == 'firmado' ? 'selected' : '' }}>Firmado</option>
+                            <x-input-label for="estado_id" :value="__('Estado')" />
+                            <select name="estado_id" id="estado_id" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                @foreach($estados as $estado)
+                                    <option value="{{ $estado->id }}" {{ old('estado_id') == $estado->id ? 'selected' : '' }}>
+                                        {{ $estado->nombre }}
+                                    </option>
+                                @endforeach
                             </select>
-                            @error('estado_convenio') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            @error('estado_id') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <!-- Horas Totales -->
@@ -197,26 +220,7 @@
                             @error('horario') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Grupo -->
-                        <div>
-                            <label for="grupo" class="block text-sm font-medium text-gray-700">Grupo</label>
-                            <input type="text" name="grupo" id="grupo" value="{{ old('grupo') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
-                            @error('grupo') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
 
-                        <!-- Curso -->
-                        <div>
-                            <label for="curso" class="block text-sm font-medium text-gray-700">Curso</label>
-                            <input type="text" name="curso" id="curso" value="{{ old('curso') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
-                            @error('curso') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
-
-                        <!-- Año -->
-                        <div>
-                            <label for="ano" class="block text-sm font-medium text-gray-700">Año</label>
-                            <input type="number" name="ano" id="ano" value="{{ old('ano', date('Y')) }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            @error('ano') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
                     </div>
 
                     <div class="mt-6 flex items-center justify-end space-x-3">
@@ -256,21 +260,12 @@
         }
 
         function updateContacts(empresaId) {
-            const select = document.getElementById('contacto_empresa_id');
-            const options = select.options;
-            const linkNuevo = document.getElementById('link_nuevo_contacto');
-            select.value = "";
-            autoFillContact(select); // Clear auto-fill fields
+            const selectContacto = document.getElementById('contacto_empresa_id');
             
-            // Update "Añadir Nuevo" link with current company ID if needed
-            if (empresaId) {
-                linkNuevo.href = "{{ route('contactos.create') }}?empresa_id=" + empresaId;
-            } else {
-                linkNuevo.href = "{{ route('contactos.create') }}";
-            }
-
-            for (let i = 1; i < options.length; i++) {
-                const opt = options[i];
+            selectContacto.value = "";
+            
+            Array.from(selectContacto.options).forEach((opt, i) => {
+                if (i === 0) return;
                 if (opt.getAttribute('data-empresa') == empresaId || empresaId == "") {
                     opt.classList.remove('hidden');
                     opt.style.display = "";
@@ -278,47 +273,112 @@
                     opt.classList.add('hidden');
                     opt.style.display = "none";
                 }
-            }
+            });
         }
 
-        function autoFillContact(select) {
+        function updateAlumnoNSS(select) {
             const selectedOption = select.options[select.selectedIndex];
-            const telefonoInput = document.getElementById('contacto_telefono');
-            const dniInput = document.getElementById('contacto_dni');
-            const puestoInput = document.getElementById('contacto_puesto');
-
+            const nssInput = document.getElementById('numero_ss');
+            const nssWarning = document.getElementById('nss_warning');
+            
             if (selectedOption && selectedOption.value) {
-                telefonoInput.value = selectedOption.getAttribute('data-telefono') || "";
-                dniInput.value = selectedOption.getAttribute('data-dni') || "";
-                puestoInput.value = selectedOption.getAttribute('data-puesto') || "";
+                const nss = selectedOption.getAttribute('data-nss');
+                nssInput.value = nss || "";
+                
+                if (nss) {
+                    nssInput.readOnly = true;
+                    nssInput.classList.add('bg-gray-50');
+                    nssWarning.classList.add('hidden');
+                } else {
+                    nssInput.readOnly = false;
+                    nssInput.classList.remove('bg-gray-50');
+                    nssWarning.classList.remove('hidden');
+                }
             } else {
-                telefonoInput.value = "";
-                dniInput.value = "";
-                puestoInput.value = "";
+                nssInput.value = "";
+                nssInput.readOnly = false;
+                nssInput.classList.remove('bg-gray-50');
+                nssWarning.classList.add('hidden');
             }
         }
 
-        function toggleContactMode(mode) {
-            const sectionExisting = document.getElementById('existing_contact_section');
-            const sectionDetails = document.getElementById('contact_details_section');
-            const searchInput = document.getElementById('search_contacto');
 
-            if (mode === 'existing') {
-                sectionExisting.classList.remove('hidden');
-                sectionDetails.classList.add('hidden');
-            } else {
-                sectionExisting.classList.add('hidden');
-                sectionDetails.classList.remove('hidden');
-                searchInput.classList.add('hidden'); // Hide search when viewing details
+        function filterDependents(resetSelections = true) {
+            const cycle = document.getElementById('ciclo').value.toLowerCase();
+            const course = document.getElementById('curso').value;
+            const group = document.getElementById('grupo').value.toLowerCase();
+            const anio = document.getElementById('ano_academico').value.toLowerCase();
+
+            if (resetSelections) {
+                document.getElementById('alumno_id').value = "";
+                document.getElementById('empresa_id').value = "";
+                document.getElementById('contacto_empresa_id').value = "";
+                document.getElementById('tutor_dual_id').value = "";
+                document.getElementById('numero_ss').value = "";
+                document.getElementById('nss_warning').classList.add('hidden');
             }
+
+            // Filter Alumnos by ciclo, curso, grupo, anio_academico
+            const selectAlumno = document.getElementById('alumno_id');
+            Array.from(selectAlumno.options).forEach((opt, i) => {
+                if (i === 0) return;
+                const optCycle = (opt.getAttribute('data-ciclo') || "").toLowerCase();
+                const optCourseNivel = opt.getAttribute('data-curso-nivel') || "";
+                const optGroup = (opt.getAttribute('data-grupo') || "").toLowerCase();
+                const optAnioAA = (opt.getAttribute('data-anio-academico') || "").toLowerCase();
+
+                const matchCycle = !cycle || optCycle.includes(cycle);
+                // Normaliza "1º" o "2º" para comparar con "1" o "2"
+                const normalizedCourse = course.replace('º', '');
+                const matchCourse = !course || optCourseNivel.toString() === normalizedCourse;
+                
+                const matchGroup = !group || optGroup.includes(group);
+                const matchAnio = !anio || optAnioAA.includes(anio);
+
+                opt.style.display = (matchCycle && matchCourse && matchGroup && matchAnio) ? "" : "none";
+            });
+
+            // Filter Tutores by ciclo, curso, grupo
+            const selectTutor = document.getElementById('tutor_dual_id');
+            Array.from(selectTutor.options).forEach((opt, i) => {
+                if (i === 0) return;
+                let matches = true;
+
+                if (cycle) {
+                    const optCiclos = JSON.parse(opt.getAttribute('data-ciclos') || "[]");
+                    matches = matches && optCiclos.some(c => c.toLowerCase().includes(cycle));
+                }
+                if (course) {
+                    const optCursos = JSON.parse(opt.getAttribute('data-cursos') || "[]");
+                    matches = matches && optCursos.includes(course);
+                }
+                if (group) {
+                    const optGrupos = JSON.parse(opt.getAttribute('data-grupos') || "[]");
+                    matches = matches && optGrupos.some(g => g.toLowerCase().includes(group));
+                }
+
+                opt.style.display = matches ? "" : "none";
+            });
+
+            // Filter Empresas by ciclo
+            const selectEmpresa = document.getElementById('empresa_id');
+            Array.from(selectEmpresa.options).forEach((opt, i) => {
+                if (i === 0) return;
+                if (!cycle) {
+                    opt.style.display = "";
+                    return;
+                }
+                const optCiclos = (opt.getAttribute('data-ciclos') || "").toLowerCase();
+                opt.style.display = optCiclos.includes(cycle) ? "" : "none";
+            });
         }
 
-        // Initialize contacts if empresa is already selected (e.g. after validation error)
         window.onload = function() {
             const empresaId = document.getElementById('empresa_id').value;
             if (empresaId) {
                 updateContacts(empresaId);
             }
+            filterDependents(false);
         };
     </script>
 </x-app-layout>

@@ -27,9 +27,6 @@
                         <x-nav-link :href="route('tutores.index')" :active="request()->routeIs('tutores.*')">
                             {{ __('Tutores') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('responsables.index')" :active="request()->routeIs('responsables.*')">
-                            {{ __('Responsables') }}
-                        </x-nav-link>
                         <x-nav-link :href="route('acuerdos.index')" :active="request()->routeIs('acuerdos.*')">
                             {{ __('Acuerdos') }}
                         </x-nav-link>

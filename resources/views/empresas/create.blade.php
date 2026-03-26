@@ -54,12 +54,6 @@
                             @error('telefono') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Responsable -->
-                        <div>
-                            <label for="responsable" class="block text-sm font-medium text-gray-700">Responsable</label>
-                            <input type="text" name="responsable" id="responsable" value="{{ old('responsable') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                            @error('responsable') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
 
                         <!-- Horario -->
                         <div>
@@ -68,12 +62,6 @@
                             @error('horario') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
-                        <!-- Campo Laboral -->
-                        <div>
-                            <label for="campo_laboral" class="block text-sm font-medium text-gray-700">Campo Laboral</label>
-                            <input type="text" name="campo_laboral" id="campo_laboral" value="{{ old('campo_laboral') }}" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm" required>
-                            @error('campo_laboral') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                        </div>
 
                         <!-- Ciclos -->
                         <div class="md:col-span-2">

@@ -1,0 +1,13 @@
+# Laradock Config for Laravel .env
+
+# Cambia estos valores en tu archivo .env de la raíz (el de Laravel, NO el de laradock)
+# SOLO cuando vayas a probar con Laradock.
+
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=laravel_prueba
+DB_USERNAME=root
+DB_PASSWORD=root
+
+# Acceso desde el navegador: http://localhost:8080

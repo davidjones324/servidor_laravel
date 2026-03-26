@@ -26,19 +26,68 @@
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                    <div>
-                        <h4 class="font-bold text-gray-700 mb-2 border-b">Ubicación y Sector</h4>
-                        <p><strong>Población:</strong> {{ $empresa->poblacion }}</p>
-                        <p><strong>Dirección:</strong> {{ $empresa->direccion }}</p>
-                        <p><strong>Campo Laboral:</strong> {{ $empresa->campo_laboral }}</p>
-                    </div>
-                    <div>
-                        <h4 class="font-bold text-gray-700 mb-2 border-b">Ciclos Relacionados</h4>
-                        <div class="flex flex-wrap gap-2 mt-2">
-                            @foreach($empresa->ciclos as $ciclo)
-                                <span class="px-2 py-1 bg-gray-100 text-gray-800 text-xs font-semibold rounded">{{ $ciclo }}</span>
-                            @endforeach
+                    <!-- Ubicación -->
+                    <div class="w-fit min-w-[380px]">
+                        <h3 class="text-sm font-black text-[#007BFF] mb-3 flex items-center gap-3 uppercase tracking-wider ml-1">
+                             <span class="flex items-center justify-center w-8 h-8 bg-blue-50 text-[#007BFF] rounded-lg border border-blue-100 shadow-sm text-base">📍</span> 
+                             Ubicación y Sede
+                        </h3>
+                        <div class="bg-white rounded-xl p-6 shadow-sm border-[#007BFF] border-2" style="border: 2px solid #007BFF !important;">
+                            <div class="divide-y divide-slate-100">
+                                <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 hover:bg-slate-50/50 transition-colors">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Dirección:</span>
+                                    <span class="text-xs font-black text-slate-900 uppercase">{{ $empresa->direccion }}</span>
+                                </div>
+                                <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 bg-slate-50/30">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Población:</span>
+                                    <span class="text-xs font-black text-blue-900 uppercase">{{ $empresa->poblacion }}</span>
+                                </div>
+                            </div>
                         </div>
+                    </div>
+
+                    <!-- Identidad Fiscal -->
+                    <div class="w-fit min-w-[380px]">
+                        <h3 class="text-sm font-black text-[#6366F1] mb-3 flex items-center gap-3 uppercase tracking-wider ml-1">
+                             <span class="flex items-center justify-center w-8 h-8 bg-indigo-50 text-[#6366F1] rounded-lg border border-indigo-100 shadow-sm text-base">🧾</span> 
+                             Identidad Fiscal
+                        </h3>
+                        <div class="bg-white rounded-xl p-6 shadow-sm border-[#6366F1] border-2" style="border: 2px solid #6366F1 !important;">
+                            <div class="divide-y divide-slate-100">
+                                <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 hover:bg-slate-50/50 transition-colors">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Teléfono:</span>
+                                    <span class="text-xs font-black font-mono text-slate-900">{{ $empresa->telefono ?? 'No indicado' }}</span>
+                                </div>
+                                <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 bg-slate-50/30">
+                                    <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Horario:</span>
+                                    <span class="text-xs font-bold text-indigo-800 uppercase italic">{{ $empresa->horario ?? 'No indicado' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Ciclos Formativos -->
+                    <div class="col-span-1 md:col-span-2 w-fit min-w-[380px]">
+                        <h3 class="text-sm font-black text-[#10B981] mb-3 flex items-center gap-3 uppercase tracking-wider ml-1">
+                             <span class="flex items-center justify-center w-8 h-8 bg-green-50 text-[#10B981] rounded-lg border border-green-100 shadow-sm text-base">📚</span> 
+                             Ciclos Formativos Vinculados
+                        </h3>
+                        <div class="bg-white rounded-xl p-6 shadow-sm border-[#10B981] border-2" style="border: 2px solid #10B981 !important;">
+                            <div class="flex flex-wrap gap-2">
+                                @forelse($empresa->ciclos as $ciclo)
+                                    <div class="bg-white border-2 border-slate-100 p-2.5 shadow-sm flex items-center gap-3 border-l-4 border-l-green-600 rounded-r-md hover:bg-green-50/30 transition-all cursor-default">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                        <span class="text-[11px] font-black text-slate-900 uppercase tracking-tight">{{ $ciclo }}</span>
+                                    </div>
+                                @empty
+                                    <div class="w-full bg-slate-50 p-6 border-2 border-dashed border-slate-200 text-center rounded-lg">
+                                        <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest italic">Sin ciclos vinculados directamente.</p>
+                                    </div>
+                                @endforelse
+                            </div>
+                        </div>
+                    </div>
+                </div>
                     </div>
                 </div>
 

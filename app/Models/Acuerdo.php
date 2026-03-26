@@ -9,14 +9,15 @@ class Acuerdo extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'alumno_id', 'empresa_id', 'contacto_empresa_id', 'tutor_dual_id', 'responsable_id', 'localidad',
-        'nombre_acuerdo', 'estado_convenio', 'avisado', 'horario', 'horas_totales',
-        'grupo', 'curso', 'ano',
+        'alumno_id', 'empresa_id', 'contacto_empresa_id', 'tutor_dual_id', 'representante_id', 'localidad',
+        'nombre_acuerdo', 'estado_id', 'horario', 'horas_totales',
+        'grupo', 'curso', 'ciclo', 'ano_academico',
     ];
 
-    protected $casts = [
-        'avisado' => 'boolean',
-    ];
+    public function estado()
+    {
+        return $this->belongsTo(EstadoAcuerdo::class , 'estado_id');
+    }
 
     public function alumno()
     {
@@ -38,8 +39,8 @@ class Acuerdo extends Model
         return $this->belongsTo(TutorDual::class);
     }
 
-    public function responsable()
+    public function representante()
     {
-        return $this->belongsTo(Responsable::class , 'responsable_id');
+        return $this->belongsTo(ContactoEmpresa::class , 'representante_id');
     }
 }

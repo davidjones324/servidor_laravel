@@ -73,8 +73,7 @@ class ContactoEmpresaController extends Controller
 
     public function destroy(ContactoEmpresa $contacto)
     {
-        $empresaId = $contacto->empresa_id;
         $contacto->delete();
-        return redirect()->route('empresas.show', $empresaId)->with('success', 'Contacto eliminado correctamente.');
+        return back()->with('success', 'Contacto eliminado correctamente.');
     }
 }

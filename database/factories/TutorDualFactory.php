@@ -22,7 +22,9 @@ class TutorDualFactory extends Factory
             'apellidos' => $this->faker->lastName(),
             'email' => $this->faker->email(),
             'telefono' => $this->faker->phoneNumber(),
-            'ciclo' => $this->faker->randomElement(['ASIR', 'SMR', 'DAM']),
+            'ciclos' => $this->faker->randomElements(['ASIR', 'SMR', 'DAM'], rand(1, 2)),
+            'cursos' => $this->faker->randomElements(['1º', '2º'], rand(1, 2)),
+            'grupo' => $this->faker->randomElement(['A', 'B', 'C']),
         ];
     }
 }

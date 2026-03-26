@@ -55,12 +55,6 @@
                             <x-input-error class="mt-2" :messages="$errors->get('telefono')" />
                         </div>
 
-                        <!-- Responsable -->
-                        <div>
-                            <x-input-label for="responsable" :value="__('Responsable')" />
-                            <x-text-input id="responsable" name="responsable" type="text" class="mt-1 block w-full" :value="old('responsable', $empresa->responsable)" />
-                            <x-input-error class="mt-2" :messages="$errors->get('responsable')" />
-                        </div>
 
                         <!-- Horario -->
                         <div>
@@ -69,12 +63,6 @@
                             <x-input-error class="mt-2" :messages="$errors->get('horario')" />
                         </div>
 
-                        <!-- Campo Laboral -->
-                        <div>
-                            <x-input-label for="campo_laboral" :value="__('Campo Laboral')" />
-                            <x-text-input id="campo_laboral" name="campo_laboral" type="text" class="mt-1 block w-full" :value="old('campo_laboral', $empresa->campo_laboral)" required />
-                            <x-input-error class="mt-2" :messages="$errors->get('campo_laboral')" />
-                        </div>
 
                         <!-- Ciclos -->
                         <div class="md:col-span-2">
@@ -148,11 +136,16 @@
                                                     <td class="px-4 py-3 whitespace-nowrap text-xs text-gray-600 font-medium">
                                                         {{ $contacto->telefono ?? '-' }}
                                                     </td>
-                                                    <td class="px-4 py-3 whitespace-nowrap text-center">
+                                                    <td class="px-4 py-3 whitespace-nowrap text-center flex justify-center space-x-2">
                                                         <button type="button" 
                                                                 onclick="selectContact({{ json_encode($contacto) }})" 
                                                                 class="text-ies-blue-600 hover:text-ies-blue-900 font-bold text-xs uppercase tracking-tight">
                                                             Ver Info
+                                                        </button>
+                                                        <button type="button" 
+                                                                onclick="deleteContact({{ $contacto->id }})" 
+                                                                class="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-tight">
+                                                            Eliminar
                                                         </button>
                                                     </td>
                                                 </tr>
@@ -193,7 +186,12 @@
                                             </p>
                                         </div>
                                     </div>
-                                    <div class="mt-6 flex justify-end">
+                                    <div class="mt-6 flex justify-between items-center">
+                                        <button type="button" 
+                                                onclick="deleteContactFromDetails()" 
+                                                class="text-[10px] font-bold text-red-500 hover:text-red-700 uppercase tracking-widest transition">
+                                            Eliminar Contacto
+                                        </button>
                                         <a id="detail_edit_link" href="#" class="text-[10px] font-bold text-ies-blue-600 hover:text-ies-blue-800 uppercase tracking-widest border-b border-ies-blue-100 hover:border-ies-blue-600 transition">Editar datos de esta persona</a>
                                     </div>
                                 </div>
@@ -216,6 +214,12 @@
                             {{ __('Actualizar Empresa') }}
                         </x-primary-button>
                     </div>
+                </form>
+
+                <!-- Formas auxiliares para eliminación (FUERA del formulario principal) -->
+                <form id="global_delete_contact_form" method="POST" style="display:none;">
+                    @csrf
+                    @method('DELETE')
                 </form>
             </div>
         </div>
@@ -261,17 +265,34 @@
             }
         }
 
+        let currentContactId = null;
+
         function selectContact(contacto) {
+            currentContactId = contacto.id;
             document.getElementById('detail_name').innerText = contacto.nombre + ' ' + (contacto.apellidos || '');
             document.getElementById('detail_puesto').innerText = contacto.puesto || 'Sin cargo especificado';
             document.getElementById('detail_telefono').innerHTML = '<svg class="w-4 h-4 mr-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path></svg>' + (contacto.telefono || '-');
             document.getElementById('detail_dni').innerHTML = '<svg class="w-4 h-4 mr-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a2 2 0 100-4 2 2 0 000 4zm0 0c1.306 0 2.417.835 2.83 2M9 14a3.001 3.001 0 00-2.83 2M15 11h3m-3 4h2"></path></svg>' + (contacto.dni || '-');
             
-            // Set edit link (assuming route exists)
+            // Set edit link
             const editUrl = "{{ route('contactos.edit', ':id') }}".replace(':id', contacto.id);
             document.getElementById('detail_edit_link').href = editUrl;
             
             toggleContactView('details');
+        }
+
+        function deleteContact(id) {
+            if (confirm('¿Estás seguro de que deseas eliminar este contacto?')) {
+                const form = document.getElementById('global_delete_contact_form');
+                form.action = "{{ route('contactos.destroy', ':id') }}".replace(':id', id);
+                form.submit();
+            }
+        }
+
+        function deleteContactFromDetails() {
+            if (currentContactId) {
+                deleteContact(currentContactId);
+            }
         }
     </script>
 </x-app-layout>

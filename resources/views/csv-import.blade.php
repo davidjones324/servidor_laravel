@@ -71,20 +71,6 @@
                     </form>
                 </div>
 
-                <!-- Importar Responsables -->
-                <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl card-ies p-6 border-l-4 border-ies-blue-700">
-                    <div class="flex items-center mb-4">
-                        <div class="p-2 bg-gray-50 rounded-lg mr-3">
-                            <svg class="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                        </div>
-                        <h3 class="text-lg font-bold text-gray-800">Responsables</h3>
-                    </div>
-                    <form action="{{ route('import.responsables') }}" method="POST" enctype="multipart/form-data" class="space-y-4">
-                        @csrf
-                        <input type="file" name="file" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-gray-50 file:text-gray-700 hover:file:bg-gray-100 transition cursor-pointer" required>
-                        <button type="submit" class="w-full inline-flex items-center justify-center px-4 py-2 bg-gray-800 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-gray-900 transition duration-150">Procesar CSV Responsables</button>
-                    </form>
-                </div>
 
             </div>
         </div>

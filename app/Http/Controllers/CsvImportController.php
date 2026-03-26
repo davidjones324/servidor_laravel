@@ -6,7 +6,6 @@ use Illuminate\Http\Request;
 use App\Models\Alumno;
 use App\Models\Empresa;
 use App\Models\TutorDual;
-use App\Models\Responsable;
 use Illuminate\Support\Facades\Validator;
 
 class CsvImportController extends Controller
@@ -18,10 +17,64 @@ class CsvImportController extends Controller
 
     public function importAlumnos(Request $request)
     {
-        return $this->processCsv($request, Alumno::class , [
-            'nombre', 'apellidos', 'fecha_nacimiento', 'curso', 'grupo', 'direccion', 'telefono', 'email'
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
         ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        // Leer cabeceras del CSV
+        $headers = fgetcsv($handle, 0, ';');
+        $headers = array_map('trim', $headers);
+
+        while (($row = fgetcsv($handle, 0, ';')) !== false) {
+            if (count($headers) !== count($row))
+                continue;
+
+            $data = array_combine($headers, $row);
+
+            // Conversión de fecha de nacimiento (Séneca: dd/mm/yyyy -> DB: yyyy-mm-dd)
+            $fechaNacimiento = null;
+            if (!empty($data['Fecha nacimiento'])) {
+                try {
+                    $fechaNacimiento = \Carbon\Carbon::createFromFormat('d/m/Y', $data['Fecha nacimiento'])->format('Y-m-d');
+                }
+                catch (\Exception $e) {
+                    $fechaNacimiento = null;
+                }
+            }
+
+            // Mapeo CSV → Base de datos (Solo campos necesarios)
+            $mapped = [
+                'nombre' => $data['Nombre'] ?? null,
+                'apellidos' => trim(($data['Primer apellido'] ?? '') . ' ' . ($data['Segundo apellido'] ?? '')),
+                'dni' => $data['DNI'] ?? null,
+                'fecha_nacimiento' => $fechaNacimiento,
+                'curso' => $data['Curso'] ?? null,
+                'grupo' => $data['Grupo'] ?? null,
+                'direccion' => $data['Dirección'] ?? null,
+                'telefono' => $data['Teléfono'] ?? null,
+                'email' => $data['Email'] ?? null,
+                'localidad' => $data['Localidad'] ?? null,
+                'codigo_postal' => $data['Código postal'] ?? null,
+                'provincia' => $data['Provincia'] ?? null,
+            ];
+
+            // Crear o actualizar por DNI
+            if ($mapped['dni']) {
+                Alumno::updateOrCreate(
+                ['dni' => $mapped['dni']],
+                    $mapped
+                );
+            }
+        }
+
+        fclose($handle);
+
+        return back()->with('success', 'Alumnos importados correctamente con filtrado de Séneca.');
     }
+
 
     public function importEmpresas(Request $request)
     {
@@ -32,17 +85,56 @@ class CsvImportController extends Controller
 
     public function importTutores(Request $request)
     {
-        return $this->processCsv($request, TutorDual::class , [
-            'dni', 'nombre', 'apellidos', 'email', 'telefono', 'ciclo'
+        $request->validate([
+            'file' => 'required|file|mimes:csv,txt',
         ]);
+
+        $file = $request->file('file');
+        $handle = fopen($file->getRealPath(), 'r');
+
+        $headers = fgetcsv($handle, 0, ';');
+        $headers = array_map('trim', $headers);
+
+        while (($row = fgetcsv($handle, 0, ';')) !== false) {
+            if (count($headers) !== count($row))
+                continue;
+
+            $data = array_combine($headers, $row);
+
+            // Intentar separar Apellidos y Nombre si vienen en un solo campo (Séneca profesores)
+            $nombre = $data['Empleado/a'] ?? null;
+            $apellidos = null;
+            if (str_contains($nombre, ',')) {
+                $parts = explode(',', $nombre);
+                $apellidos = trim($parts[0]);
+                $nombre = trim($parts[1]);
+            }
+
+            // Mapeo CSV → Base de datos
+            $mapped = [
+                'dni' => $data['DNI/Pasaporte'] ?? null,
+                'nombre' => $nombre,
+                'apellidos' => $apellidos,
+                'email' => $data['Cuenta Google/Microsoft'] ?? null,
+                'telefono' => $data['Teléfono'] ?? null,
+                'ciclos' => $data['Puesto'] ? [$data['Puesto']] : [],
+                'cursos' => [], // Campo nuevo, inicializado vacío
+            ];
+
+            if ($mapped['dni']) {
+                TutorDual::updateOrCreate(
+                ['dni' => $mapped['dni']],
+                    $mapped
+                );
+            }
+        }
+
+        fclose($handle);
+
+        return back()->with('success', 'Profesores importados correctamente ajustados al nuevo sistema.');
     }
 
-    public function importResponsables(Request $request)
-    {
-        return $this->processCsv($request, Responsable::class , [
-            'dni', 'nombre', 'apellidos', 'email', 'telefono', 'cargo'
-        ]);
-    }
+
 
     private function processCsv(Request $request, $model, $fields)
     {

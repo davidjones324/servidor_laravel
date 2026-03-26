@@ -9,7 +9,13 @@ class TutorDual extends Model
 {
     use HasFactory;
     protected $fillable = [
-        'dni', 'nombre', 'apellidos', 'email', 'telefono', 'ciclo'
+        'dni', 'nombre', 'apellidos', 'email', 'telefono', 'ciclos', 'cursos', 'grupo', 'grupos'
+    ];
+
+    protected $casts = [
+        'ciclos' => 'array',
+        'cursos' => 'array',
+        'grupos' => 'array',
     ];
 
     public function acuerdos()

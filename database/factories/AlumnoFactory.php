@@ -17,10 +17,10 @@ class AlumnoFactory extends Factory
             'nombre' => $this->faker->firstName(),
             'apellidos' => $this->faker->lastName() . ' ' . $this->faker->lastName(),
             'fecha_nacimiento' => $this->faker->date(),
-            'curso' => '2025/2026',
+            'anio_ciclo' => $this->faker->randomElement([1, 2]),
+            'curso' => '2025/2026', // This is school year, but anio_ciclo is the level
             'grupo' => $this->faker->randomElement(['A', 'B', 'C']),
             'ciclo' => $ciclo,
-            'anio_ciclo' => $this->faker->randomElement([1, 2]),
             'direccion' => $this->faker->address(),
             'telefono' => $this->faker->phoneNumber(),
             'email' => $this->faker->unique()->safeEmail(),

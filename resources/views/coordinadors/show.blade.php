@@ -25,62 +25,53 @@
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg card-ies p-6">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
                     <!-- Información Básica -->
-                    <div class="space-y-4">
-                        <h3 class="text-lg font-bold text-ies-blue-800 border-b border-gray-100 pb-2 flex items-center">
-                            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
-                            </svg>
-                            Información de Contacto
+                    <!-- Información Básica -->
+                    <!-- Información de Contacto -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Información de Contacto -->
+                    <div class="bg-white border-4 border-blue-800 p-5 mb-4 shadow-none rounded-none h-full">
+                        <h3 class="text-base font-black text-blue-900 mb-4 flex items-center gap-2">
+                             <span class="p-1.5 bg-blue-100 text-blue-800 rounded text-sm">👤</span> 
+                             Información de Contacto
                         </h3>
-                        
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Nombre Completo</p>
-                            <p class="text-lg font-semibold text-gray-900">{{ $coordinador->nombre }} {{ $coordinador->apellidos }}</p>
-                        </div>
-                        
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">DNI / Identificación</p>
-                            <p class="text-gray-800 font-medium">{{ $coordinador->dni }}</p>
-                        </div>
-
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Correo Electrónico</p>
-                            <a href="mailto:{{ $coordinador->email }}" class="text-ies-blue-600 hover:underline flex items-center">
-                                <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path>
-                                </svg>
-                                {{ $coordinador->email }}
-                            </a>
-                        </div>
-
-                        <div>
-                            <p class="text-sm font-medium text-gray-500">Teléfono</p>
-                            <p class="text-gray-800 font-medium flex items-center">
-                                <svg class="w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.21l-2.257 1.13a11.042 11.042 0 005.516 5.516l1.13-2.257a1 1 0 011.21-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"></path>
-                                </svg>
-                                {{ $coordinador->telefono }}
-                            </p>
-                        </div>
-                    </div>
-
-                    <!-- Estadísticas o Info Adicional -->
-                    <div class="bg-gray-50 rounded-xl p-6 border border-gray-100 self-start">
-                        <h3 class="text-md font-bold text-gray-700 mb-4 uppercase tracking-wider">Resumen de Actividad</h3>
-                        <div class="grid grid-cols-1 gap-4">
-                            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100">
-                                <p class="text-xs text-gray-400 uppercase font-bold">Fecha de Alta</p>
-                                <p class="text-md font-semibold text-gray-700">{{ $coordinador->created_at->format('d/m/Y') }}</p>
+                        <div class="divide-y divide-slate-100">
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">Nombre:</span>
+                                <span class="text-sm font-black text-slate-900 uppercase">{{ $coordinador->nombre }} {{ $coordinador->apellidos }}</span>
                             </div>
-                            <div class="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-center justify-between">
-                                <div>
-                                    <p class="text-xs text-gray-400 uppercase font-bold">Estado</p>
-                                    <p class="text-md font-semibold text-green-600">Activo</p>
-                                </div>
-                                <div class="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">DNI / ID:</span>
+                                <span class="text-sm font-black text-slate-900 uppercase tracking-widest">{{ $coordinador->dni }}</span>
+                            </div>
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">Email:</span>
+                                <span class="text-sm font-black text-blue-800 break-all">{{ $coordinador->email }}</span>
+                            </div>
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">Teléfono:</span>
+                                <span class="text-sm font-black font-mono text-blue-900">{{ $coordinador->telefono }}</span>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Estado Actual -->
+                    <div class="bg-white border-4 border-green-800 p-5 mb-4 shadow-none rounded-none self-start">
+                        <h3 class="text-base font-black text-green-900 mb-4 flex items-center gap-2">
+                             <span class="p-1.5 bg-green-100 text-green-800 rounded text-sm">📊</span> 
+                             Estado Actual
+                        </h3>
+                        <div class="divide-y divide-slate-100">
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">Fecha Alta:</span>
+                                <span class="text-sm font-black text-slate-900 uppercase">{{ $coordinador->created_at->format('d/m/Y') }}</span>
+                            </div>
+                            <div class="grid grid-cols-[140px_1fr] py-2">
+                                <span class="text-[10px] font-bold text-slate-500 uppercase self-center">Estatus:</span>
+                                <span class="text-xs font-black text-green-700 uppercase italic tracking-widest">ACTIVO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
                 </div>
 
                 <div class="mt-12 flex justify-start">

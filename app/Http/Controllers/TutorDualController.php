@@ -13,13 +13,23 @@ class TutorDualController extends Controller
 
         if ($request->filled('search')) {
             $search = $request->input('search');
-            $query->where(function ($query) use ($search) {
-                $query->where('nombre', 'LIKE', $search . '%');
-            });
+            $query->where('nombre', 'LIKE', $search . '%');
         }
 
         if ($request->filled('ciclo')) {
-            $query->where('ciclo', $request->input('ciclo'));
+            $query->whereJsonContains('ciclos', $request->input('ciclo'));
+        }
+
+        if ($request->filled('curso')) {
+            $query->whereJsonContains('cursos', $request->input('curso'));
+        }
+
+        if ($request->filled('grupo')) {
+            $grupoSearch = $request->input('grupo');
+            $query->where(function ($q) use ($grupoSearch) {
+                $q->where('grupo', 'LIKE', '%' . $grupoSearch . '%')
+                    ->orWhere('grupos', 'LIKE', '%' . $grupoSearch . '%');
+            });
         }
 
         $tutores = $query->paginate(10)->withQueryString();
@@ -40,7 +50,11 @@ class TutorDualController extends Controller
             'apellidos' => 'required|string|max:150',
             'email' => 'required|email|max:150',
             'telefono' => 'required|string|max:20',
-            'ciclo' => 'required|in:ASIR,SMR,DAM',
+            'ciclos' => 'required|array',
+            'ciclos.*' => 'in:ASIR,SMR,DAM',
+            'cursos' => 'nullable|array',
+            'grupo' => 'nullable|string|max:50',
+            'grupos' => 'nullable|array',
         ]);
 
         TutorDual::create($validated);
@@ -66,7 +80,10 @@ class TutorDualController extends Controller
             'apellidos' => 'required|string|max:150',
             'email' => 'required|email|max:150',
             'telefono' => 'required|string|max:20',
-            'ciclo' => 'required|in:ASIR,SMR,DAM',
+            'ciclos' => 'required|array',
+            'ciclos.*' => 'in:ASIR,SMR,DAM',
+            'cursos' => 'nullable|array',
+            'grupos' => 'nullable|array',
         ]);
 
         $tutor->update($validated);

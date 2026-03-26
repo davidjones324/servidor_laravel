@@ -35,30 +35,38 @@
                             </button>
                         </div>
 
-                        <div id="filter-bar" class="{{ request()->anyFilled(['search', 'ciclo']) ? '' : 'hidden' }} bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
-                            <form action="{{ route('alumnos.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div id="filter-bar" class="{{ request()->anyFilled(['search', 'ciclo', 'grupo', 'curso']) ? '' : 'hidden' }} bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
+                            <form action="{{ route('alumnos.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-4 gap-4">
                                 <div>
-                                    <x-input-label for="search" :value="__('Buscar por nombre/apellidos')" />
-                                    <x-text-input id="search" name="search" type="text" class="mt-1 block w-full" :value="request('search')" placeholder="Empieza por..." />
+                                    <x-input-label for="search" :value="__('Nombre / Apellidos')" />
+                                    <x-text-input id="search" name="search" type="text" class="mt-1 block w-full text-sm" :value="request('search')" placeholder="Buscar..." />
                                 </div>
                                 <div>
-                                    <x-input-label for="ciclo" :value="__('Filtrar por Ciclo')" />
-                                    <select id="ciclo" name="ciclo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
-                                        <option value="">Todos los ciclos</option>
+                                    <x-input-label for="ciclo" :value="__('Ciclo')" />
+                                    <select id="ciclo" name="ciclo" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-ies-blue-500 focus:ring-ies-blue-500 sm:text-sm">
+                                        <option value="">Todos</option>
                                         <option value="ASIR" {{ request('ciclo') == 'ASIR' ? 'selected' : '' }}>ASIR</option>
                                         <option value="DAM" {{ request('ciclo') == 'DAM' ? 'selected' : '' }}>DAM</option>
                                         <option value="SMR" {{ request('ciclo') == 'SMR' ? 'selected' : '' }}>SMR</option>
                                     </select>
                                 </div>
-                                <div class="flex items-end space-x-2">
-                                    <x-primary-button type="submit">
-                                        {{ __('Aplicar') }}
-                                    </x-primary-button>
-                                    @if(request()->anyFilled(['search', 'ciclo']))
+                                <div>
+                                    <x-input-label for="grupo" :value="__('Grupo')" />
+                                    <x-text-input id="grupo" name="grupo" type="text" class="mt-1 block w-full text-sm" :value="request('grupo')" placeholder="A, B..." />
+                                </div>
+                                <div>
+                                    <x-input-label for="curso" :value="__('Año Académico')" />
+                                    <x-text-input id="curso" name="curso" type="text" class="mt-1 block w-full text-sm" :value="request('curso')" placeholder="24/25..." />
+                                </div>
+                                <div class="md:col-span-4 flex justify-end space-x-2 border-t pt-3 mt-1">
+                                    @if(request()->anyFilled(['search', 'ciclo', 'grupo', 'curso']))
                                         <a href="{{ route('alumnos.index') }}" class="inline-flex items-center px-4 py-2 bg-white border border-gray-300 rounded-md font-semibold text-xs text-gray-700 uppercase tracking-widest shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-25 transition ease-in-out duration-150">
                                             {{ __('Limpiar') }}
                                         </a>
                                     @endif
+                                    <x-primary-button type="submit">
+                                        {{ __('Filtrar Alumnos') }}
+                                    </x-primary-button>
                                 </div>
                             </form>
                         </div>
@@ -71,8 +79,10 @@
                                     <th>Nombre</th>
                                     <th>Apellidos</th>
                                     <th>Ciclo</th>
-                                    <th>Curso/Grupo</th>
-                                    <th>Email</th>
+                                    <th>Año Académico</th>
+                                    <th>Grupo</th>
+                                    <th>DNI</th>
+                                    <th>Nº SS</th>
                                     <th class="text-right">Acciones</th>
                                 </tr>
                             </thead>
@@ -88,8 +98,16 @@
                                                 <span class="text-gray-400 text-xs">—</span>
                                             @endif
                                         </td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $alumno->curso }} - {{ $alumno->grupo }}</td>
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $alumno->email }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $alumno->curso }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $alumno->grupo }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{{ $alumno->dni ?? 'Sin DNI' }}</td>
+                                        <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                            @if($alumno->numero_ss)
+                                                <span class="font-mono text-gray-600">{{ $alumno->numero_ss }}</span>
+                                            @else
+                                                <span class="text-red-600 font-extrabold text-xs uppercase">SIN NSS</span>
+                                            @endif
+                                        </td>
                                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                                             <div class="flex justify-end space-x-3">
                                                 <a href="{{ route('alumnos.show', $alumno) }}" class="text-ies-blue-600 hover:text-ies-blue-800 font-medium">Ver</a>

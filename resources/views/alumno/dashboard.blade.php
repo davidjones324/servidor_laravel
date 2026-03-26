@@ -1,3 +1,7 @@
+
+
+
+
 <x-app-layout>
     <x-slot name="header">
         <div class="flex items-center space-x-3">
@@ -22,31 +26,53 @@
                         <span class="badge-ies-blue uppercase">Alumno</span>
                     </div>
 
-                    @if($alumno = Auth::user()->alumno)
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-400">👤</span>
-                                <p><strong class="text-gray-700">Nombre completo:</strong> <span class="text-gray-900">{{ $alumno->nombre }} {{ $alumno->apellidos }}</span></p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-400">📧</span>
-                                <p><strong class="text-gray-700">Email:</strong> <span class="text-gray-900">{{ $alumno->email }}</span></p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-400">📱</span>
-                                <p><strong class="text-gray-700">Teléfono:</strong> <span class="text-gray-900">{{ $alumno->telefono }}</span></p>
-                            </div>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-gray-400">📚</span>
-                                <p><strong class="text-gray-700">Curso/Grupo:</strong> <span class="text-gray-900">{{ $alumno->curso }} - {{ $alumno->grupo }}</span></p>
-                            </div>
-                        </div>
-                    @else
-                        <div class="p-4 bg-amber-50 text-amber-700 border border-amber-200 rounded-lg flex items-center space-x-2">
-                            <span>⚠️</span>
-                            <span>No tienes una ficha de alumno asociada. Contacta con tu profesor.</span>
-                        </div>
-                    @endif
+                    @if($alumno)
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div class="flex items-center space-x-2">
+            <span class="text-gray-400">👤</span>
+            <p><strong class="text-gray-700">Nombre completo:</strong> <span class="text-gray-900">{{ $alumno->nombre }} {{ $alumno->apellidos }}</span></p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-gray-400">📧</span>
+            <p><strong class="text-gray-700">Email:</strong> <span class="text-gray-900">{{ $alumno->email }}</span></p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-gray-400">📱</span>
+            <p><strong class="text-gray-700">Teléfono:</strong> <span class="text-gray-900">{{ $alumno->telefono }}</span></p>
+        </div>
+        <div class="flex items-center space-x-2">
+            <span class="text-gray-400">📚</span>
+            <p><strong class="text-gray-700">Curso/Grupo:</strong> <span class="text-gray-900">{{ $alumno->curso }} - {{ $alumno->grupo }}</span></p>
+        </div>
+    </div>
+
+    {{-- BOTÓN SEGÚN SI TIENE O NO CUESTIONARIO --}}
+    @if($cuestionario)
+        <a href="{{ route('formulario.edit') }}" class="btn-secondary space-x-2 py-3 px-6 shadow-md mt-6 inline-block">
+            <span>Ver / Editar mi cuestionario</span>
+        </a>
+    @else
+        <a href="{{ route('alumno.registro') }}" class="btn-primary space-x-2 py-3 px-6 shadow-md mt-6 inline-block">
+            <span>Completar mi perfil de alumno</span>
+        </a>
+    @endif
+
+@else
+    {{-- NO EXISTE REGISTRO DE ALUMNO --}}
+    <div class="p-8 bg-ies-blue-50 border border-ies-blue-100 rounded-2xl flex flex-col items-center text-center space-y-4">
+        <div class="w-16 h-16 bg-white rounded-full flex items-center justify-center shadow-sm">
+            <span class="text-3xl">📝</span>
+        </div>
+        <div>
+            <h4 class="text-xl font-bold text-gray-800">¡Bienvenido al sistema de prácticas!</h4>
+            <p class="text-gray-600 mt-2 max-w-md">Para que tus profesores puedan asignarte una empresa, primero debes completar tu perfil con tus datos de contacto e intereses.</p>
+        </div>
+        <a href="{{ route('alumno.registro') }}" class="btn-primary space-x-2 py-3 px-6 shadow-md">
+            <span>Completar mi perfil de alumno</span>
+        </a>
+    </div>
+@endif
+
                 </div>
             </div>
 

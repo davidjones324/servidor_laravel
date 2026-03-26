@@ -10,7 +10,7 @@ class Empresa extends Model
     use HasFactory;
     protected $fillable = [
         'razon_social', 'cif', 'direccion', 'poblacion', 'email', 'telefono',
-        'observaciones', 'responsable', 'horario', 'campo_laboral', 'ciclos',
+        'observaciones', 'horario', 'ciclos'
     ];
 
     protected $casts = [

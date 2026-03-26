@@ -32,8 +32,8 @@
                             </button>
                         </div>
 
-                        <div id="filter-bar" class="{{ request()->anyFilled(['search', 'ciclo']) ? '' : 'hidden' }} bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
-                            <form action="{{ route('tutores.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div id="filter-bar" class="{{ request()->anyFilled(['search', 'ciclo', 'curso', 'grupo']) ? '' : 'hidden' }} bg-gray-50 p-4 rounded-lg border border-gray-100 mb-4">
+                            <form action="{{ route('tutores.index') }}" method="GET" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                                 <div>
                                     <x-input-label for="search" :value="__('Buscar por nombre/apellidos')" />
                                     <x-text-input id="search" name="search" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" :value="request('search')" placeholder="Empieza por..." />
@@ -47,7 +47,20 @@
                                         <option value="SMR" {{ request('ciclo') == 'SMR' ? 'selected' : '' }}>SMR</option>
                                     </select>
                                 </div>
-                                <div class="flex items-end space-x-2">
+                                <div>
+                                    <x-input-label for="curso" :value="__('Filtrar por Curso')" />
+                                    <select id="curso" name="curso" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                                        <option value="">Todos los cursos</option>
+                                        @foreach(['1º ASIR', '2º ASIR', '1º DAM', '2º DAM', '1º SMR', '2º SMR'] as $c)
+                                            <option value="{{ $c }}" {{ request('curso') == $c ? 'selected' : '' }}>{{ $c }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div>
+                                    <x-input-label for="grupo" :value="__('Filtrar por Grupo')" />
+                                    <x-text-input id="grupo" name="grupo" type="text" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm" :value="request('grupo')" placeholder="Ej: A, B..." />
+                                </div>
+                                <div class="lg:col-span-4 flex justify-end space-x-2">
                                     <button type="submit" class="inline-flex items-center px-4 py-2 bg-ies-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-ies-blue-700 active:bg-ies-blue-800 transition ease-in-out duration-150 shadow-sm">
                                         {{ __('Aplicar Filtro') }}
                                     </button>
@@ -66,7 +79,8 @@
                             <tr>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-widest">Nombre Completo</th>
                                 <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-widest">Email</th>
-                                <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-widest">Ciclo</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-widest">Ciclos</th>
+                                <th class="px-6 py-4 text-left text-xs font-bold text-white uppercase tracking-widest">Cursos Impartidos</th>
                                 <th class="px-6 py-4 text-right text-xs font-bold text-white uppercase tracking-widest italic">Acciones</th>
                             </tr>
                         </thead>
@@ -85,9 +99,32 @@
                                         {{ $tutor->email }}
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap">
-                                        <span class="badge-ies-green">
-                                            {{ $tutor->ciclo }}
-                                        </span>
+                                        <div class="flex flex-wrap gap-1">
+                                            @if(is_array($tutor->ciclos))
+                                                @foreach($tutor->ciclos as $ciclo)
+                                                    <span class="badge-ies-green text-[10px] px-2 py-0.5">
+                                                        {{ $ciclo }}
+                                                    </span>
+                                                @endforeach
+                                            @else
+                                                <span class="badge-ies-green text-[10px] px-2 py-0.5">
+                                                    {{ $tutor->ciclos }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td class="px-6 py-4 whitespace-nowrap">
+                                        <div class="flex flex-wrap gap-1">
+                                            @if(is_array($tutor->cursos) && count($tutor->cursos) > 0)
+                                                @foreach($tutor->cursos as $curso)
+                                                    <span class="bg-gray-100 text-gray-600 text-[10px] px-2 py-0.5 rounded border border-gray-200">
+                                                        {{ $curso }}
+                                                    </span>
+                                                @endforeach
+                                            @else
+                                                <span class="text-gray-400 text-[10px] italic">No asignados</span>
+                                            @endif
+                                        </div>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
                                         <div class="flex justify-end space-x-3">
@@ -108,7 +145,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="px-6 py-12 text-center">
+                                    <td colspan="5" class="px-6 py-12 text-center">
                                         <p class="text-gray-500 italic font-medium">No hay tutores registrados.</p>
                                     </td>
                                 </tr>

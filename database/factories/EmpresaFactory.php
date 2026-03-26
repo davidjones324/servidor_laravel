@@ -21,8 +21,7 @@ class EmpresaFactory extends Factory
             'observaciones' => $this->faker->sentence(),
             'responsable' => $this->faker->name(),
             'horario' => $this->faker->randomElement(['L-V 8:00-15:00', 'L-V 9:00-14:00', 'L-J 8:00-15:00 V 8:00-14:00']),
-            'campo_laboral' => $this->faker->jobTitle(),
-            'ciclos' => $this->faker->randomElements(['ASIR', 'SMR', 'DAM'], rand(1, 3)),
+            'ciclos' => $this->faker->randomElements(['ASIR', 'SMR', 'DAM'], rand(1, 2)),
         ];
     }
 }

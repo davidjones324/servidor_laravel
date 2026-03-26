@@ -25,40 +25,96 @@
             <div class="bg-white overflow-hidden shadow-xl sm:rounded-xl card-ies border-t-4 border-ies-green-500 p-8">
                 <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                     <!-- Avatar y Ciclo -->
-                    <div class="flex flex-col items-center p-6 bg-gray-50 rounded-2xl border border-gray-100">
-                        <div class="w-24 h-24 bg-ies-green-100 rounded-full flex items-center justify-center text-ies-green-700 text-3xl font-bold mb-4 shadow-inner">
+                    <!-- Avatar y Ciclo -->
+                    <!-- Avatar y Ciclo -->
+                    <div class="flex flex-col items-center p-8 bg-white rounded-none border-[4px] border-[#007BFF] shadow-sm self-start" style="border: 4px solid #007BFF !important;">
+                        <div class="w-24 h-24 bg-blue-50 border-2 border-[#007BFF] rounded-xl flex items-center justify-center text-[#007BFF] text-3xl font-black mb-6 shadow-sm">
                             {{ substr($tutor->nombre, 0, 1) }}{{ substr($tutor->apellidos, 0, 1) }}
                         </div>
-                        <h3 class="text-xl font-bold text-gray-900">{{ $tutor->nombre }} {{ $tutor->apellidos }}</h3>
-                        <span class="badge-ies-green mt-2 text-sm px-4 py-1">Tutor {{ $tutor->ciclo }}</span>
+                        <h3 class="text-xl font-black text-slate-900 text-center leading-tight mb-5 uppercase tracking-tighter">{{ $tutor->nombre }} {{ $tutor->apellidos }}</h3>
+                        <div class="flex flex-wrap justify-center gap-2">
+                            @if(is_array($tutor->ciclos))
+                                @foreach($tutor->ciclos as $ciclo)
+                                    <span class="bg-[#007BFF] text-white text-[10px] font-black px-3 py-1 rounded-none shadow-sm uppercase tracking-widest">Tutor {{ $ciclo }}</span>
+                                @endforeach
+                            @else
+                                <span class="bg-[#007BFF] text-white text-[10px] font-black px-3 py-1 rounded-none shadow-sm uppercase tracking-widest">Tutor {{ $tutor->ciclos }}</span>
+                            @endif
+                        </div>
                     </div>
 
                     <!-- Datos Detallados -->
-                    <div class="md:col-span-2 space-y-6">
-                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                            <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition">
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">DNI / NIE</p>
-                                <p class="text-md font-semibold text-gray-800 tracking-tighter">{{ $tutor->dni }}</p>
-                            </div>
-                            <div class="bg-white p-4 rounded-lg border border-gray-100 shadow-sm hover:shadow-md transition">
-                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Teléfono Directo</p>
-                                <p class="text-md font-semibold text-gray-800">{{ $tutor->telefono }}</p>
+                    <div class="md:col-span-2 space-y-8">
+                        <!-- Datos de Contacto -->
+                        <div class="w-fit min-w-[350px]">
+                            <h3 class="text-sm font-black text-[#007BFF] mb-3 flex items-center gap-3 uppercase tracking-wider ml-1">
+                                <span class="flex items-center justify-center w-8 h-8 bg-blue-50 text-[#007BFF] rounded-lg border border-blue-100 shadow-sm text-base">📋</span> 
+                                Datos de Contacto
+                            </h3>
+                            <div class="bg-white rounded-xl p-6 shadow-sm border-[#007BFF] border-2" style="border: 2px solid #007BFF !important;">
+                                <div class="divide-y divide-slate-100">
+                                    <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 hover:bg-slate-50/50 transition-colors">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">DNI / NIE:</span>
+                                        <span class="text-xs font-black text-slate-900 uppercase tracking-widest">{{ $tutor->dni }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 bg-slate-50/30">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Teléfono:</span>
+                                        <span class="text-xs font-black font-mono text-blue-900">{{ $tutor->telefono }}</span>
+                                    </div>
+                                    <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 hover:bg-slate-50/50 transition-colors">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Email:</span>
+                                        <span class="text-[11px] font-black text-[#007BFF] break-all">{{ $tutor->email }}</span>
+                                    </div>
+                                    @if($tutor->grupo)
+                                    <div class="grid grid-cols-[140px_1fr] py-2.5 px-2 bg-slate-50/30">
+                                        <span class="text-[10px] font-bold text-slate-500 uppercase self-center tracking-tight">Grupo Principal:</span>
+                                        <span class="text-xs font-black text-slate-900 uppercase">{{ $tutor->grupo }}</span>
+                                    </div>
+                                    @endif
+                                </div>
                             </div>
                         </div>
 
-                        <div class="bg-white p-6 rounded-lg border border-gray-100 shadow-sm">
-                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Correo Institucional</p>
-                            <a href="mailto:{{ $tutor->email }}" class="text-xl font-bold text-ies-blue-600 hover:text-ies-blue-800 transition break-all">
-                                {{ $tutor->email }}
-                            </a>
+                        <!-- Área de Docencia -->
+                        <div class="w-fit min-w-[450px]">
+                            <h3 class="text-sm font-black text-[#10B981] mb-3 flex items-center gap-3 uppercase tracking-wider ml-1">
+                                <span class="flex items-center justify-center w-8 h-8 bg-green-50 text-[#10B981] rounded-lg border border-green-100 shadow-sm text-base">🏫</span> 
+                                Área de Docencia
+                            </h3>
+                            <div class="bg-white rounded-xl p-6 shadow-sm border-[#10B981] border-2" style="border: 2px solid #10B981 !important;">
+                                <div class="flex flex-wrap gap-3">
+                                    @php $hasAssignments = false; @endphp
+                                    @foreach($tutor->cursos as $curso)
+                                        @if(isset($tutor->grupos[$curso]) && is_array($tutor->grupos[$curso]) && count($tutor->grupos[$curso]) > 0)
+                                            @foreach($tutor->grupos[$curso] as $g)
+                                                @if($g)
+                                                    @php $hasAssignments = true; @endphp
+                                                    <div class="bg-white p-2.5 border-2 border-slate-100 shadow-sm border-l-4 border-l-green-600 rounded-r-md hover:bg-green-50/30 transition-all flex items-center gap-3">
+                                                        <span class="text-xs font-black text-slate-800 uppercase tracking-tighter">{{ $curso }} {{ $g }}</span>
+                                                        <span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @else
+                                            @php $hasAssignments = true; @endphp
+                                            <div class="bg-white p-2.5 border-2 border-slate-100 shadow-sm border-l-4 border-l-green-600 rounded-r-md hover:bg-green-50/30 transition-all">
+                                                <span class="text-xs font-black text-slate-800 uppercase tracking-tighter">{{ $curso }}</span>
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                    
+                                    @if(!$hasAssignments && count($tutor->cursos) == 0)
+                                        <div class="bg-slate-50 p-8 border-2 border-dashed border-slate-200 w-full text-center rounded-lg">
+                                            <span class="text-[10px] text-slate-400 italic font-black uppercase tracking-widest">Sin asignaciones registradas.</span>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
                         </div>
+                    </div>
 
                         <div class="mt-8 pt-6 border-t border-gray-100 flex items-center justify-between text-gray-400 text-xs italic">
                             <span>Registrado el {{ $tutor->created_at->format('d/m/Y') }}</span>
-                            <form action="{{ route('tutores.destroy', $tutor) }}" method="POST" onsubmit="return confirm('¿Eliminar permanentemente?')">
-                                @csrf @method('DELETE')
-                                <button type="submit" class="text-red-400 hover:text-red-600 font-bold transition">Eliminar Cuenta</button>
-                            </form>
                         </div>
                     </div>
                 </div>

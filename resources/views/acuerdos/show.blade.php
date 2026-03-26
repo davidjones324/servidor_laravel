@@ -38,19 +38,21 @@
                                 </span>
                                 <span class="flex items-center">
                                     <svg class="w-5 h-5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
-                                    {{ $acuerdo->curso }} ({{ $acuerdo->ano }})
+                                    {{ $acuerdo->ciclo }} · {{ $acuerdo->curso }} {{ $acuerdo->grupo }} ({{ $acuerdo->ano_academico }})
                                 </span>
                             </div>
                         </div>
                         <div class="flex flex-col items-end shrink-0">
                             <div class="mb-3">
-                                @if($acuerdo->estado_convenio == 'firmado')
-                                    <span class="px-5 py-2.5 rounded-full text-sm font-bold bg-green-500 text-white shadow-lg border border-green-400">Firmado</span>
-                                @elseif($acuerdo->estado_convenio == 'hecho_pendiente_firma')
-                                    <span class="px-5 py-2.5 rounded-full text-sm font-bold bg-yellow-500 text-white shadow-lg border border-yellow-400">Pendiente de Firma</span>
-                                @else
-                                    <span class="px-5 py-2.5 rounded-full text-sm font-bold bg-blue-400 text-white shadow-lg border border-blue-300">Pendiente</span>
-                                @endif
+                                @php
+                                    $estadoNombre = $acuerdo->estado?->nombre ?? 'Pendiente';
+                                    $estadoBg = match(strtolower($estadoNombre)) {
+                                        'firmado' => 'bg-green-500 border-green-400',
+                                        'realizado' => 'bg-yellow-500 border-yellow-400',
+                                        default => 'bg-blue-400 border-blue-300',
+                                    };
+                                @endphp
+                                <span class="px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-lg border {{ $estadoBg }}">{{ $estadoNombre }}</span>
                             </div>
                             <div class="bg-white/10 backdrop-blur-sm px-4 py-2 rounded-xl border border-white/20">
                                 <p class="text-xs text-blue-100 font-bold uppercase tracking-widest mb-0.5">Carga Horaria</p>
@@ -64,8 +66,8 @@
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-12">
                         <!-- Columna Izquierda: Entidades -->
                         <div class="space-y-8">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 border-b-2 border-ies-blue-100 pb-2 mb-4">Participantes</h4>
+                            <fieldset class="border-2 border-ies-blue-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                <legend class="text-lg font-bold text-ies-blue-800 px-4 bg-white rounded-full border-2 border-ies-blue-100">👥 Participantes</legend>
                                 <div class="grid grid-cols-1 gap-4">
                                     <!-- Alumno -->
                                     <a href="{{ route('alumnos.show', $acuerdo->alumno) }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition shadow-sm group">
@@ -75,6 +77,35 @@
                                         <div>
                                             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Alumno</p>
                                             <p class="text-base font-bold text-gray-800 group-hover:text-ies-blue-600 transition">{{ $acuerdo->alumno->nombre }} {{ $acuerdo->alumno->apellidos }}</p>
+                                            
+                                            @if(session('success'))
+                                                <div class="mt-2 text-[10px] text-green-600 font-bold bg-green-50 px-2 py-1 rounded inline-block border border-green-100">
+                                                    {{ session('success') }}
+                                                </div>
+                                            @endif
+
+                                            @if(empty($acuerdo->alumno->numero_ss))
+                                                <div class="mt-1" x-data="{ showNssForm: false }">
+                                                    <p class="text-[10px] text-red-500 font-bold uppercase animate-pulse">⚠️ Falta Nº SS</p>
+                                                    <button type="button" @click.prevent="showNssForm = !showNssForm" class="text-[10px] text-ies-blue-600 font-bold underline uppercase tracking-tighter hover:text-ies-blue-800 transition">
+                                                        [ Añadir ahora ]
+                                                    </button>
+                                                    
+                                                    <div x-show="showNssForm" x-transition class="mt-2 p-3 bg-white border border-ies-blue-100 rounded-lg shadow-sm z-10">
+                                                        <form action="{{ route('alumnos.updateNss', $acuerdo->alumno) }}" method="POST" class="flex flex-col space-y-2">
+                                                            @csrf
+                                                            <input type="text" name="numero_ss" placeholder="Ingresa NSS..." required 
+                                                                class="text-xs border-gray-200 rounded p-2 focus:ring-ies-blue-500 focus:border-ies-blue-500">
+                                                            <div class="flex space-x-2">
+                                                                <button type="submit" class="bg-ies-blue-600 text-white text-[10px] px-3 py-1 rounded font-bold hover:bg-ies-blue-700 transition">Guardar</button>
+                                                                <button type="button" @click="showNssForm = false" class="text-[10px] text-gray-400 font-bold hover:text-gray-600">Cancelar</button>
+                                                            </div>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            @else
+                                                <p class="text-[10px] text-gray-400 mt-1">Nº SS: {{ $acuerdo->alumno->numero_ss }}</p>
+                                            @endif
                                         </div>
                                     </a>
 
@@ -100,21 +131,23 @@
                                         </div>
                                     </a>
 
-                                    <!-- Responsable -->
-                                    <a href="{{ route('responsables.show', $acuerdo->responsable) }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition shadow-sm group">
+                                    <!-- Representante Legal -->
+                                    @if($acuerdo->representante)
+                                    <a href="{{ route('contactos.edit', $acuerdo->representante) }}" class="flex items-center p-4 rounded-xl border border-gray-100 hover:bg-gray-50 transition shadow-sm group">
                                         <div class="h-12 w-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-700 font-bold mr-4 group-hover:bg-purple-600 group-hover:text-white transition">
-                                            {{ substr($acuerdo->responsable->nombre, 0, 1) }}{{ substr($acuerdo->responsable->apellidos, 0, 1) }}
+                                            {{ substr($acuerdo->representante->nombre, 0, 1) }}{{ substr($acuerdo->representante->apellidos, 0, 1) }}
                                         </div>
                                         <div class="flex-1">
-                                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Responsable</p>
-                                            <p class="text-base font-bold text-gray-800 group-hover:text-ies-blue-600 transition">{{ $acuerdo->responsable->nombre }} {{ $acuerdo->responsable->apellidos }}</p>
-                                            @if($acuerdo->responsable->cargo)
-                                                <p class="text-[10px] text-purple-600 font-bold uppercase">{{ $acuerdo->responsable->cargo }}</p>
+                                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider">Representante Legal</p>
+                                            <p class="text-base font-bold text-gray-800 group-hover:text-ies-blue-600 transition">{{ $acuerdo->representante->nombre }} {{ $acuerdo->representante->apellidos }}</p>
+                                            @if($acuerdo->representante->puesto)
+                                                <p class="text-[10px] text-purple-600 font-bold uppercase">{{ $acuerdo->representante->puesto }}</p>
                                             @endif
                                         </div>
                                     </a>
+                                    @endif
                                 </div>
-                            </div>
+                            </fieldset>
 
                             <!-- Contacto Empresa -->
                             @php
@@ -122,13 +155,13 @@
                             @endphp
 
                             @if($contactoToShow)
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 border-b-2 border-ies-green-100 pb-2 mb-4">
-                                    Contacto en la Empresa
+                            <fieldset class="border-2 border-ies-green-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow mt-8">
+                                <legend class="text-lg font-bold text-ies-green-800 px-4 bg-white rounded-full border-2 border-ies-green-100">
+                                    🤝 Tutor Laboral
                                     @if(!$acuerdo->contactoEmpresa)
-                                        <span class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded ml-2 uppercase">Sugerido (Empresa)</span>
+                                        <span class="text-[10px] bg-yellow-100 text-yellow-700 px-2 py-0.5 rounded ml-2 uppercase border border-yellow-200">Sugerido (Empresa)</span>
                                     @endif
-                                </h4>
+                                </legend>
                                 <div class="bg-ies-green-50/30 p-5 rounded-2xl border border-ies-green-100 relative overflow-hidden">
                                     <div class="absolute right-0 top-0 opacity-5 -mr-4 -mt-4">
                                         <svg class="w-32 h-32 text-ies-green-600" fill="currentColor" viewBox="0 0 24 24"><path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 14H4V8l8 5 8-5v10zm-8-7L4 6h16l-8 5z"/></svg>
@@ -157,43 +190,33 @@
                                         </div>
                                     </div>
                                 </div>
-                            </div>
+                            </fieldset>
                             @endif
                         </div>
 
                         <!-- Columna Derecha: Información Adicional -->
                         <div class="space-y-8">
-                            <div>
-                                <h4 class="text-lg font-bold text-gray-900 border-b-2 border-ies-blue-100 pb-2 mb-4">Detalles Técnicos</h4>
+                            <fieldset class="border-2 border-ies-blue-100 rounded-xl p-6 bg-white shadow-sm hover:shadow-md transition-shadow">
+                                <legend class="text-lg font-bold text-ies-blue-800 px-4 bg-white rounded-full border-2 border-ies-blue-100">⚙️ Detalles Técnicos</legend>
                                 <div class="bg-gray-50 rounded-2xl p-6 border border-gray-100">
                                     <div class="grid grid-cols-1 gap-6">
                                         <div>
                                             <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Horario</p>
                                             <p class="text-gray-700 font-medium leading-relaxed">{{ $acuerdo->horario ?? 'No especificado' }}</p>
                                         </div>
-                                        <div class="grid grid-cols-2 gap-4">
+                                        <div class="grid grid-cols-3 gap-4">
                                             <div>
-                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Grupo</p>
-                                                <p class="text-gray-700 font-bold text-lg">{{ $acuerdo->grupo }}</p>
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Ciclo</p>
+                                                <p class="text-gray-700 font-bold text-lg">{{ $acuerdo->ciclo ?? '—' }}</p>
+                                            </div>
+                                            <div>
+                                                <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Curso / Grupo</p>
+                                                <p class="text-gray-700 font-bold text-lg">{{ $acuerdo->curso }} {{ $acuerdo->grupo }}</p>
                                             </div>
                                             <div>
                                                 <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Año Académico</p>
-                                                <p class="text-gray-700 font-bold text-lg">{{ $acuerdo->ano }}</p>
+                                                <p class="text-gray-700 font-bold text-lg">{{ $acuerdo->ano_academico }}</p>
                                             </div>
-                                        </div>
-                                        <div>
-                                            <p class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">Estado de Aviso</p>
-                                            @if($acuerdo->avisado)
-                                                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-ies-green-100 text-ies-green-800">
-                                                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path></svg>
-                                                    Avisado
-                                                </span>
-                                            @else
-                                                <span class="inline-flex items-center px-4 py-1.5 rounded-full text-sm font-bold bg-red-100 text-red-800">
-                                                    <svg class="w-4 h-4 mr-1.5" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd"></path></svg>
-                                                    No Avisado
-                                                </span>
-                                            @endif
                                         </div>
                                     </div>
                                 </div>
